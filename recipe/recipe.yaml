@@ -2,7 +2,7 @@ schema_version: 1
 
 context:
   name: gaphor
-  version: 3.2.0
+  version: "3.3.0"
   python_min: "3.12"
 
 package:
@@ -11,7 +11,7 @@ package:
 
 source:
   url: https://pypi.org/packages/source/${{ name[0] }}/${{ name }}/gaphor-${{ version }}.tar.gz
-  sha256: b2dcc1b1c67ec4094c92c0929b3c8156a53d7ad9acdb05ce7c11840482474412
+  sha256: 11d8cf0a101c4c9d06e3e0c5b79f31c1d8c17a1b720f28f722153e99e1e24366
 
 build:
   number: 0
