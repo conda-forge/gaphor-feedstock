@@ -6,6 +6,13 @@ context:
   python_min: "3.12"
   # pydot
   python_check_max: "3.13"
+  osx_extra: pyobjc-framework-cocoa >=9.0.1,<11.0.0
+  linux_extra: libgles
+  win_extra: python *
+  noarch_extra: |-
+    ${{ linux_extra if noarch_platform == "linux" -}}
+    ${{ osx_extra if noarch_platform == "osx" -}}
+    ${{ win_extra if noarch_platform == "win" -}}
 
 package:
   name: gaphor
@@ -31,6 +38,7 @@ requirements:
     - python ${{ python_min }}.*
   run:
     - __${{ noarch_platform }}
+    - ${{ noarch_extra }}
     - adwaita-icon-theme
     - babel >=2.10.3
     - better-exceptions >=0.3.3
@@ -48,13 +56,6 @@ requirements:
     - python >=${{ python_min }}
     - python-generic >=1.0.0
     - tinycss2 >=1.0.2
-    - if: noarch_platform == "linux"
-      then:
-        - dbus
-        - libgles
-    - if: noarch_platform == "osx"
-      then:
-        - pyobjc-framework-cocoa >=9.0.1,<11.0.0
 
 tests:
   - python:
@@ -69,6 +70,7 @@ tests:
     script:
       env:
         DISPLAY: :1
+        PYTHONIOENCODING: utf-8
       content:
         - gaphor --help
         - gaphor install-schemas
