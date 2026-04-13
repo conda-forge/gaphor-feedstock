@@ -50,6 +50,7 @@ requirements:
     - tinycss2 >=1.0.2
     - if: noarch_platform == "linux"
       then:
+        - dbus
         - libegl
     - if: noarch_platform == "osx"
       then:
