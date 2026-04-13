@@ -52,7 +52,6 @@ requirements:
       then:
         - dbus
         - libgles
-        - libegl
     - if: noarch_platform == "osx"
       then:
         - pyobjc-framework-cocoa >=9.0.1,<11.0.0
