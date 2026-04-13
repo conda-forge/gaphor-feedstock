@@ -1,20 +1,21 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/prefix-dev/recipe-format/main/schema.json
 schema_version: 1
 
 context:
-  name: gaphor
   version: "3.3.0"
   python_min: "3.12"
+  python_check_max: "3.14"
 
 package:
-  name: ${{ name|lower }}
+  name: gaphor
   version: ${{ version }}
 
 source:
-  url: https://pypi.org/packages/source/${{ name[0] }}/${{ name }}/gaphor-${{ version }}.tar.gz
+  url: https://pypi.org/packages/source/g/gaphor/gaphor-${{ version }}.tar.gz
   sha256: 11d8cf0a101c4c9d06e3e0c5b79f31c1d8c17a1b720f28f722153e99e1e24366
 
 build:
-  number: 0
+  number: 1
   script: ${{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
   noarch: python
   python:
@@ -23,48 +24,45 @@ build:
 
 requirements:
   host:
-    - python ${{ python_min }}.*
-    - poetry-core
     - pip
+    - poetry-core
+    - python ${{ python_min }}.*
   run:
-    - python >=${{ python_min }}
-    - pycairo >=1.22.0
-    - pygobject >=3.52
-    - gaphas >=5.1
-    - python-generic >=1.0.0
-    - tinycss2 >=1.0.2
+    - __${{ noarch_platform }}
+    - adwaita-icon-theme
     - babel >=2.10.3
-    - jedi >=0.18.1,<0.20.0
     - better-exceptions >=0.3.3
-    - pydot >=1.4.2,<4.0.0
-    - pillow >=10.0.0
     - defusedxml >=0.7.1
     - dulwich >=0.25.0
+    - gaphas >=5.1
     - gtk4
-    - libadwaita
-    - adwaita-icon-theme
     - gtksourceview
+    - jedi >=0.18.1,<0.20.0
+    - libadwaita
+    - pillow >=10.0.0
+    - pycairo >=1.22.0
+    - pydot >=1.4.2,<4.0.0
+    - pygobject >=3.52
+    - python >=${{ python_min }}
+    - python-generic >=1.0.0
+    - tinycss2 >=1.0.2
     - if: osx
       then:
-        - __osx
         - pyobjc-framework-cocoa >=9.0.1,<11.0.0
 
 tests:
   - python:
-      imports:
-        - gaphor
+      imports: gaphor
       pip_check: true
       python_version:
         - ${{ python_min }}.*
-        - "*"
+        - ${{ python_check_max }}.*
   - requirements:
       run:
-        - pip
-        - gtk4
-        - libadwaita
-        - gtksourceview
+        - python ${{ python_min }}.*
     script:
       - gaphor --help
+      - gaphor self-test
 
 about:
   summary: Gaphor is the simple modeling tool written in Python.
