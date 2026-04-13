@@ -48,6 +48,9 @@ requirements:
     - python >=${{ python_min }}
     - python-generic >=1.0.0
     - tinycss2 >=1.0.2
+    - if: noarch_platform == "linux"
+      then:
+        - libegl
     - if: noarch_platform == "osx"
       then:
         - pyobjc-framework-cocoa >=9.0.1,<11.0.0
@@ -67,6 +70,7 @@ tests:
         DISPLAY: :1
       content:
         - gaphor --help
+        - gaphor install-schemas
         - ${{ "xvfb-run" if noarch_platform == "linux" }} gaphor self-test
 
 about:
