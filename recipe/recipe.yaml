@@ -51,6 +51,7 @@ requirements:
     - if: noarch_platform == "linux"
       then:
         - dbus
+        - libgles
         - libegl
     - if: noarch_platform == "osx"
       then:
