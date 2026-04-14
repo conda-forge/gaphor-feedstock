@@ -73,9 +73,7 @@ tests:
         PYTHONIOENCODING: utf-8
       content:
         - gaphor --help
-        - if: unix
-          then:
-            - gaphor install-schemas
+        - gaphor install-schemas
         - ${{ "xvfb-run" if noarch_platform == "linux" }} gaphor self-test
 
 about:
