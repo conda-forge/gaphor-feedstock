@@ -10,9 +10,9 @@ context:
   linux_extra: libgles
   win_extra: python *
   noarch_extra: |-
-    ${{ linux_extra if noarch_platform == "linux" -}}
-    ${{ osx_extra if noarch_platform == "osx" -}}
-    ${{ win_extra if noarch_platform == "win" -}}
+    ${{ linux_extra if noarch_platform == "linux" }}
+    ${{ osx_extra if noarch_platform == "osx" }}
+    ${{ win_extra if noarch_platform == "win" }}
 
 package:
   name: gaphor
@@ -38,7 +38,7 @@ requirements:
     - python ${{ python_min }}.*
   run:
     - __${{ noarch_platform }}
-    - ${{ noarch_extra }}
+    - ${{ noarch_extra | trim }}
     - adwaita-icon-theme
     - babel >=2.10.3
     - better-exceptions >=0.3.3
@@ -73,7 +73,9 @@ tests:
         PYTHONIOENCODING: utf-8
       content:
         - gaphor --help
-        - gaphor install-schemas
+        - if: unix
+          then:
+            - gaphor install-schemas
         - ${{ "xvfb-run" if noarch_platform == "linux" }} gaphor self-test
 
 about:
