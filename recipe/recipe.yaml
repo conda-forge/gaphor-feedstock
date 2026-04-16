@@ -2,17 +2,19 @@
 schema_version: 1
 
 context:
-  version: "3.3.0"
+  name: gaphor
+  version: "3.3.1"
   python_min: "3.12"
   # segfaults if missing on e.g. a gtk3-based distro
   linux_extra: libgles
+  # pyobjc-framework-cocoa 11.1 is the first build with 3.14, see below
   osx_extra: pyobjc-framework-cocoa >=9.0.1,<11.0.0
+  # nothing yet
   win_extra: python *
   noarch_extra: |-
     ${{ linux_extra if noarch_platform == "linux" }}
     ${{ osx_extra if noarch_platform == "osx" }}
     ${{ win_extra if noarch_platform == "win" }}
-  # pyobjc-framework-cocoa 11.1 is the first build with 3.14
   python_check_max: ${{ "3.13" if osx else "3.14" }}
 
 package:
@@ -21,7 +23,7 @@ package:
 
 source:
   url: https://pypi.org/packages/source/g/gaphor/gaphor-${{ version }}.tar.gz
-  sha256: 11d8cf0a101c4c9d06e3e0c5b79f31c1d8c17a1b720f28f722153e99e1e24366
+  sha256: 5aee13a496e3b867a04a72c9af4a602dea4780bf59c65d3b78d2d2e07fd618ff
 
 build:
   number: 1
