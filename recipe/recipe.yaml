@@ -4,7 +4,6 @@ schema_version: 1
 context:
   version: "3.3.0"
   python_min: "3.12"
-  python_check_max: "3.14"
   # segfaults if missing on e.g. a gtk3-based distro
   linux_extra: libgles
   osx_extra: pyobjc-framework-cocoa >=9.0.1,<11.0.0
@@ -13,6 +12,8 @@ context:
     ${{ linux_extra if noarch_platform == "linux" }}
     ${{ osx_extra if noarch_platform == "osx" }}
     ${{ win_extra if noarch_platform == "win" }}
+  # pyobjc-framework-cocoa 11.1 is the first build with 3.14
+  python_check_max: ${{ "3.13" if osx else "3.14" }}
 
 package:
   name: gaphor
