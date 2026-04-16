@@ -50,7 +50,7 @@ requirements:
     - jedi >=0.18.1,<0.20.0
     - pillow >=10.0.0
     - pycairo >=1.22.0
-    - pydot >=1.4.2,<4.0.0
+    - pydot >=1.4.2
     - pygobject >=3.52
     - python >=${{ python_min }}
     - python-generic >=1.0.0
