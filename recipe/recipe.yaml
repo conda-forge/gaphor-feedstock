@@ -89,6 +89,9 @@ tests:
             - copy run_test.py c:\temp\conda-forge-gaphor-test
             - cd c:\temp\conda-forge-gaphor-test
         - python run_test.py
+        - if: win
+          then:
+            - timeout /t 30 /nobreak
 
 about:
   summary: Gaphor is the simple modeling tool written in Python.
