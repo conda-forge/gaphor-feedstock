@@ -1,14 +1,10 @@
 """Smoke tests for ``gaphor`` CLI."""
 
 import os
-import pytest
 import textwrap
 import atexit
 from subprocess import PIPE, STDOUT
-from pathlib import Path
 import tempfile
-import time
-import shutil
 import contextlib
 import sys
 from psutil import Popen, wait_procs, NoSuchProcess
@@ -46,9 +42,10 @@ def _run(args) -> tuple[int, str]:
     proc = Popen(args, stdout=PIPE, stderr=STDOUT, encoding="utf-8")
 
     def stop() -> None:
-        procs: Popen = []
+        procs: list[Popen] = []
         with contextlib.suppress(NoSuchProcess):
             procs = [*proc.children(), proc]
+        print(f"... {len(procs)} processes need stopping")
         if not procs:
             return
         for p in procs:
@@ -57,7 +54,7 @@ def _run(args) -> tuple[int, str]:
         for p in alive:
             p.kill()
             p.wait()
-        time.sleep(5)
+        print("... return codes", [p.returncode for p in procs], flush=True)
 
     atexit.register(stop)
     output, _ = proc.communicate()
@@ -68,10 +65,7 @@ def _run(args) -> tuple[int, str]:
 
 if __name__ == "__main__":
     # extra cwd stuff for windows cleanup issues
-    td = Path(tempfile.mkdtemp())
-    old_cwd = Path.cwd()
-    os.chdir(f"{td}")
-    rc = pytest.main(PYTEST_ARGS)
-    os.chdir(f"{old_cwd}")
-    shutil.rmtree(td, ignore_errors=True)
-    sys.exit(rc)
+    with tempfile.TemporaryDirectory() as td:
+        test_proc = Popen([sys.executable, "-m", "pytest", *PYTEST_ARGS], cwd=td)
+        test_proc.wait()
+    sys.exit(test_proc.returncode)
