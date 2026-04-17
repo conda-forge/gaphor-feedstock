@@ -70,22 +70,11 @@ tests:
         - ${{ python_check_max }}.*
   - requirements:
       run:
+        - psutil
+        - pytest
         - python ${{ python_min }}.*
     script:
-      env:
-        # for linux xvfb-run
-        DISPLAY: :1
-        # for windows
-        PYTHONIOENCODING: utf-8
-      content:
-        - gaphor --help
-        - gaphor install-schemas
-        # this passes with a few warnings on windows, but then fails with
-        #   Error:   × Test failed: failed to remove directory `D:\bld\test\test_gaphorkTKckB`:
-        #     Access is denied. (os error 5)
-        - if: unix
-          then:
-            - ${{ "xvfb-run" if noarch_platform == "linux" }} gaphor self-test
+      file: run_test.py
 
 about:
   summary: Gaphor is the simple modeling tool written in Python.
