@@ -91,7 +91,7 @@ tests:
         - python run_test.py
         - if: win
           then:
-            - timeout /t 30 /nobreak
+            - ping -n 31 127.0.0.1
 
 about:
   summary: Gaphor is the simple modeling tool written in Python.
