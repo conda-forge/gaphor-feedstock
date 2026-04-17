@@ -68,7 +68,9 @@ tests:
       python_version:
         - ${{ python_min }}.*
         - ${{ python_check_max }}.*
-  - requirements:
+  - files:
+      recipe: run_test.py
+    requirements:
       run:
         - psutil
         - pytest
@@ -79,7 +81,13 @@ tests:
         DISPLAY: ":1"
         # for anything on windows
         PYTHONIOENCODING: utf-8
-      file: run_test.py
+      content:
+        - if: win
+          then:
+            - md c:\temp\conda-forge-gaphor-test
+            - copy run_test.py c:\temp\conda-forge-gaphor-test
+            - cd c:\temp\conda-forge-gaphor-test
+        - python run_test.py
 
 about:
   summary: Gaphor is the simple modeling tool written in Python.
