@@ -69,7 +69,8 @@ tests:
         - ${{ python_min }}.*
         - ${{ python_check_max }}.*
   - files:
-      recipe: run_test.py
+      recipe:
+        - run_test.py
     requirements:
       run:
         - psutil
