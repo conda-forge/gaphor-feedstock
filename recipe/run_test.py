@@ -67,13 +67,6 @@ def _run(args) -> tuple[int, str]:
 
 
 if __name__ == "__main__":
-    os.environ.update(
-        # for linux
-        DISPLAY=":1",
-        # for windows
-        PYTHONIOENCODING="utf-8",
-    )
-
     # extra cwd stuff for windows cleanup issues
     td = Path(tempfile.mkdtemp())
     old_cwd = Path.cwd()
