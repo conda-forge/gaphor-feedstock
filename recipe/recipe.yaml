@@ -1,70 +1,100 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/prefix-dev/recipe-format/main/schema.json
 schema_version: 1
 
 context:
   name: gaphor
   version: "3.3.1"
   python_min: "3.12"
+  # segfaults if missing on e.g. a gtk3-based distro
+  linux_extra: libgles
+  osx_extra: pyobjc-framework-cocoa >=9.0.1
+  # nothing yet
+  win_extra: python *
+  noarch_extra: |-
+    ${{ linux_extra if noarch_platform == "linux" }}
+    ${{ osx_extra if noarch_platform == "osx" }}
+    ${{ win_extra if noarch_platform == "win" }}
+  python_check_max: "3.14"
 
 package:
-  name: ${{ name|lower }}
+  name: gaphor
   version: ${{ version }}
 
 source:
-  url: https://pypi.org/packages/source/${{ name[0] }}/${{ name }}/gaphor-${{ version }}.tar.gz
+  url: https://pypi.org/packages/source/g/gaphor/gaphor-${{ version }}.tar.gz
   sha256: 5aee13a496e3b867a04a72c9af4a602dea4780bf59c65d3b78d2d2e07fd618ff
 
 build:
-  number: 0
-  script: ${{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+  number: 1
   noarch: python
+  script:
+    - ${{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation --disable-pip-version-check
   python:
     entry_points:
       - gaphor = gaphor.main:main
 
 requirements:
   host:
-    - python ${{ python_min }}.*
-    - poetry-core
     - pip
+    - poetry-core >=2.0.0,<3.0.0
+    - python ${{ python_min }}.*
   run:
-    - python >=${{ python_min }}
-    - pycairo >=1.22.0
-    - pygobject >=3.52
-    - gaphas >=5.1
-    - python-generic >=1.0.0
-    - tinycss2 >=1.0.2
+    - __${{ noarch_platform }}
+    - ${{ noarch_extra | trim }}
+    # from pyproject.toml
     - babel >=2.10.3
-    - jedi >=0.18.1,<0.20.0
     - better-exceptions >=0.3.3
-    - pydot >=1.4.2,<4.0.0
-    - pillow >=10.0.0
     - defusedxml >=0.7.1
     - dulwich >=0.25.0
-    - gtk4
-    - libadwaita
+    - gaphas >=5.1
+    - jedi >=0.18.1,<0.20.0
+    - pillow >=10.0.0
+    - pycairo >=1.22.0
+    - pydot >=1.4.2
+    - pygobject >=3.52
+    - python >=${{ python_min }}
+    - python-generic >=1.0.0
+    - tinycss2 >=1.0.2
+    # not on PyPI
     - adwaita-icon-theme
+    - gtk4
     - gtksourceview
-    - if: osx
-      then:
-        - __osx
-        - pyobjc-framework-cocoa >=9.0.1,<11.0.0
+    - libadwaita
 
 tests:
   - python:
-      imports:
-        - gaphor
+      imports: gaphor
       pip_check: true
       python_version:
         - ${{ python_min }}.*
-        - "*"
-  - requirements:
+        - ${{ python_check_max }}.*
+  - files:
+      recipe:
+        - run_test.py
+    requirements:
       run:
-        - pip
-        - gtk4
-        - libadwaita
-        - gtksourceview
+        - psutil
+        - pytest
+        - python ${{ python_min }}.*
     script:
-      - gaphor --help
+      env:
+        # for xvfb-run on linux
+        DISPLAY: ":1"
+        # for anything on windows
+        PYTHONIOENCODING: utf-8
+      content:
+        - if: win
+          then:
+            - md c:\temp\conda-forge-gaphor-test
+            - copy run_test.py c:\temp\conda-forge-gaphor-test
+            - cd c:\temp\conda-forge-gaphor-test
+        - python run_test.py
+        - if: win
+          then:
+            # workaround for rattler-build failing to clean up the
+            # test folder if any processes are still running; this
+            # "waits a long", as the most reliable `sleep` equivalent
+            - ping -n 31 127.0.0.1 >nul 2>&1
 
 about:
   summary: Gaphor is the simple modeling tool written in Python.
