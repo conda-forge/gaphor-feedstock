@@ -91,7 +91,10 @@ tests:
         - python run_test.py
         - if: win
           then:
-            - ping -n 31 127.0.0.1
+            # workaround for rattler-build failing to clean up the
+            # test folder if any processes are still running; this
+            # "waits a long", as the most reliable `sleep` equivalent
+            - ping -n 31 127.0.0.1 >nul 2>&1
 
 about:
   summary: Gaphor is the simple modeling tool written in Python.
