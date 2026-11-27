@@ -21,20 +21,39 @@ package:
   version: ${{ version }}
 
 source:
-  url: https://pypi.org/packages/source/g/gaphor/gaphor-${{ version }}.tar.gz
-  sha256: 9f5630cbb47f8ee863f49c13912dffcf0bb04822114f81d433c1efd405f8be4c
+  url: https://github.com/gaphor/gaphor/archive/refs/tags/${{ version }}.tar.gz
+  sha256: b979668f321ca4228e468fa0ea5550af5881ba3675ff5fc36bbaa0720d46c769
 
 build:
-  number: 0
+  number: 1
   noarch: python
   script:
+    # compile the translation catalogues before packaging them in the wheel
+    - ${{ PYTHON }} -c "from scripts.build_babel import compile_mo_release; compile_mo_release()"
     - ${{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation --disable-pip-version-check
+    # install the menuinst launcher and icon
+    - if: linux
+      then:
+        - mkdir -p "$PREFIX/Menu"
+        - cp "$RECIPE_DIR/menu/gaphor.json" "$PREFIX/Menu/gaphor.json"
+        - cp "$SRC_DIR/data/logos/gaphor-256x256.png" "$PREFIX/Menu/gaphor.png"
+    - if: osx
+      then:
+        - mkdir -p "$PREFIX/Menu"
+        - cp "$RECIPE_DIR/menu/gaphor.json" "$PREFIX/Menu/gaphor.json"
+        - cp "$SRC_DIR/_packaging/macos/gaphor.icns" "$PREFIX/Menu/gaphor.icns"
+    - if: win
+      then:
+        - if not exist "%PREFIX%\Menu" mkdir "%PREFIX%\Menu"
+        - copy /Y "%RECIPE_DIR%\menu\gaphor.json" "%PREFIX%\Menu\gaphor.json"
+        - copy /Y "%SRC_DIR%\_packaging\windows\gaphor.ico" "%PREFIX%\Menu\gaphor.ico"
   python:
     entry_points:
       - gaphor = gaphor.main:main
 
 requirements:
   host:
+    - babel >=2.10.3
     - pip
     - poetry-core >=2.0.0,<3.0.0
     - python ${{ python_min }}.*
@@ -61,6 +80,16 @@ requirements:
     - libadwaita
 
 tests:
+  - package_contents:
+      files:
+        - Menu/gaphor.json
+        - if: linux
+          then: Menu/gaphor.png
+        - if: osx
+          then: Menu/gaphor.icns
+        - if: win
+          then: Menu/gaphor.ico
+        - site-packages/gaphor/locale/de/LC_MESSAGES/gaphor.mo
   - python:
       imports: gaphor
       pip_check: true

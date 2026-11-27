@@ -1,0 +1,26 @@
+{
+  "menu_name": "Gaphor",
+  "menu_items": [
+    {
+      "name": {
+        "target_environment_is_base": "Gaphor",
+        "target_environment_is_not_base": "Gaphor ({{ ENV_NAME }})"
+      },
+      "description": "The simple modeling tool",
+      "command": ["gaphor", "gui"],
+      "icon": "{{ MENU_DIR }}/gaphor.{{ ICON_EXT }}",
+      "activate": true,
+      "terminal": false,
+      "platforms": {
+        "linux": {
+          "Categories": ["GTK", "GNOME", "Development", "ProjectManagement"],
+          "Keywords": ["UML", "RAAML", "C4", "SysML", "Design", "Graph"],
+          "DBusActivatable": false
+        },
+        "osx": {},
+        "win": {}
+      }
+    }
+  ],
+  "$schema": "https://schemas.conda.org/menuinst/menuinst-1-1-3.schema.json"
+}
