@@ -1,8 +1,10 @@
 """Smoke tests for ``gaphor`` CLI."""
 
+import json
 import os
 import textwrap
 import atexit
+from importlib.util import find_spec
 from subprocess import PIPE, STDOUT
 import tempfile
 import contextlib
@@ -41,6 +43,22 @@ def test_self_test() -> None:
     os.environ["GSETTINGS_SCHEMA_DIR"] = str(schemas_dir)
     rc, _ = _run_self_test()
     assert rc == 0, "failed self-test"
+
+
+def test_menu_launcher() -> None:
+    """Ship the menuinst launcher and platform icons."""
+    menu = Path(sys.prefix) / "Menu"
+    for name in ("gaphor.json", "gaphor.png", "gaphor.icns", "gaphor.ico"):
+        assert (menu / name).is_file(), f"missing {name}"
+    items = json.loads((menu / "gaphor.json").read_text(encoding="utf-8"))["menu_items"]
+    assert isinstance(items, list), "menu_items is not a list"
+
+
+def test_translations() -> None:
+    """Ship compiled translation catalogues."""
+    package = Path(find_spec("gaphor").origin).parent
+    mo_file = package / "locale" / "de" / "LC_MESSAGES" / "gaphor.mo"
+    assert mo_file.is_file(), "missing German translation"
 
 
 def _run_self_test() -> tuple[int, str]:
