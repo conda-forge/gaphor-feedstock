@@ -9,6 +9,10 @@ import contextlib
 import sys
 from psutil import Popen, wait_procs, NoSuchProcess
 import platform
+import shutil
+from pathlib import Path
+
+import pytest
 
 PKG_VERSION = os.environ["PKG_VERSION"]
 IS_LINUX = platform.system() == "Linux"
@@ -28,12 +32,39 @@ def test_version() -> None:
     assert PKG_VERSION in output, "unexpected version"
 
 
+@pytest.mark.skipif(not IS_LINUX, reason="Linux-specific command selection")
+def test_self_test_uses_xvfb_on_linux(monkeypatch) -> None:
+    monkeypatch.setattr(shutil, "which", lambda _: "/usr/bin/xvfb-run")
+    assert _self_test_command() == ["/usr/bin/xvfb-run", "gaphor", "self-test"]
+
+
+@pytest.mark.skipif(not IS_LINUX, reason="Linux-specific command selection")
+def test_self_test_requires_xvfb_on_linux(monkeypatch) -> None:
+    monkeypatch.setattr(shutil, "which", lambda _: None)
+    with pytest.raises(RuntimeError, match="xvfb-run"):
+        _self_test_command()
+
+
 def test_self_test() -> None:
     """Install schema and run the self-test CLI."""
-    rc, _ = _run(["gaphor", "install-schemas"])
+    schemas_dir = Path(sys.prefix) / "share" / "glib-2.0" / "schemas"
+    rc, _ = _run(["gaphor", "install-schemas", "--schemas-dir", str(schemas_dir)])
     assert rc == 0, "failed to install schemas"
-    rc, _ = _run((["xvfb-run"] if IS_LINUX else []) + ["gaphor", "self-test"])
+    os.environ["GSETTINGS_SCHEMA_DIR"] = str(schemas_dir)
+    rc, _ = _run(_self_test_command())
     assert rc == 0, "failed self-test"
+
+
+def _self_test_command() -> list[str]:
+    command = ["gaphor", "self-test"]
+    if not IS_LINUX:
+        return command
+    xvfb_run = shutil.which("xvfb-run")
+    if not xvfb_run:
+        raise RuntimeError(
+            "self-test requires xvfb-run on Linux; see recipe/yum_requirements.txt"
+        )
+    return [xvfb_run, *command]
 
 
 def _run(args) -> tuple[int, str]:

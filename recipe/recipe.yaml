@@ -77,8 +77,6 @@ tests:
         - python ${{ python_min }}.*
     script:
       env:
-        # for xvfb-run on linux
-        DISPLAY: ":1"
         # for anything on windows
         PYTHONIOENCODING: utf-8
       content:
