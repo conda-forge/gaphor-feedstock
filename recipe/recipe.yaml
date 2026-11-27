@@ -80,6 +80,16 @@ requirements:
     - libadwaita
 
 tests:
+  - package_contents:
+      files:
+        - Menu/gaphor.json
+        - if: linux
+          then: Menu/gaphor.png
+        - if: osx
+          then: Menu/gaphor.icns
+        - if: win
+          then: Menu/gaphor.ico
+        - site-packages/gaphor/locale/de/LC_MESSAGES/gaphor.mo
   - python:
       imports: gaphor
       pip_check: true
