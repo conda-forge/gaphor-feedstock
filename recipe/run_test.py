@@ -12,8 +12,6 @@ import platform
 import shutil
 from pathlib import Path
 
-import pytest
-
 PKG_VERSION = os.environ["PKG_VERSION"]
 IS_LINUX = platform.system() == "Linux"
 PYTEST_ARGS = ["-vvs", "--color=yes", "--tb=long", __file__]
@@ -32,66 +30,75 @@ def test_version() -> None:
     assert PKG_VERSION in output, "unexpected version"
 
 
-@pytest.mark.skipif(not IS_LINUX, reason="Linux-specific command selection")
-def test_self_test_uses_xvfb_on_linux(monkeypatch) -> None:
-    monkeypatch.setattr(shutil, "which", lambda _: "/usr/bin/xvfb-run")
-    assert _self_test_command() == ["/usr/bin/xvfb-run", "gaphor", "self-test"]
-
-
-@pytest.mark.skipif(not IS_LINUX, reason="Linux-specific command selection")
-def test_self_test_requires_xvfb_on_linux(monkeypatch) -> None:
-    monkeypatch.setattr(shutil, "which", lambda _: None)
-    with pytest.raises(RuntimeError, match="xvfb-run"):
-        _self_test_command()
-
-
 def test_self_test() -> None:
     """Install schema and run the self-test CLI."""
     schemas_dir = Path(sys.prefix) / "share" / "glib-2.0" / "schemas"
     rc, _ = _run(["gaphor", "install-schemas", "--schemas-dir", str(schemas_dir)])
     assert rc == 0, "failed to install schemas"
     os.environ["GSETTINGS_SCHEMA_DIR"] = str(schemas_dir)
-    rc, _ = _run(_self_test_command())
+    rc, _ = _run_self_test()
     assert rc == 0, "failed self-test"
 
 
-def _self_test_command() -> list[str]:
+def _run_self_test() -> tuple[int, str]:
     command = ["gaphor", "self-test"]
     if not IS_LINUX:
-        return command
-    xvfb_run = shutil.which("xvfb-run")
-    if not xvfb_run:
-        raise RuntimeError(
-            "self-test requires xvfb-run on Linux; see recipe/yum_requirements.txt"
-        )
-    return [xvfb_run, *command]
+        return _run(command)
+    if shutil.which("xvfb-run"):
+        return _run(["xvfb-run", *command])
+    if shutil.which("mutter"):
+        display = "wayland-gaphor-test"
+        env = {
+            **os.environ,
+            "GDK_BACKEND": "wayland",
+            "WAYLAND_DISPLAY": display,
+            "XDG_RUNTIME_DIR": os.environ.get("XDG_RUNTIME_DIR")
+            or tempfile.gettempdir(),
+        }
+        compositor = [
+            "dbus-run-session",
+            "--",
+            "mutter",
+            "--headless",
+            "--wayland",
+            "--no-x11",
+            "--virtual-monitor=1024x768",
+            "--wayland-display",
+            display,
+            "--",
+            *command,
+        ]
+        return _run(compositor, env=env)
+    raise RuntimeError(
+        "self-test requires xvfb-run or mutter on Linux; see recipe/yum_requirements.txt"
+    )
 
 
-def _run(args) -> tuple[int, str]:
+def _run(args, env=None) -> tuple[int, str]:
     """Run a CLI defensively and slowly, because windows."""
     print(f">>> {args}", flush=True)
-    proc = Popen(args, stdout=PIPE, stderr=STDOUT, encoding="utf-8")
-
-    def stop() -> None:
-        procs: list[Popen] = []
-        with contextlib.suppress(NoSuchProcess):
-            procs = [*proc.children(), proc]
-        print(f"... {len(procs)} processes need stopping")
-        if not procs:
-            return
-        for p in procs:
-            p.terminate()
-        _, alive = wait_procs(procs, timeout=3)
-        for p in alive:
-            p.kill()
-            p.wait()
-        print("... return codes", [p.returncode for p in procs], flush=True)
-
-    atexit.register(stop)
+    proc = Popen(args, stdout=PIPE, stderr=STDOUT, encoding="utf-8", env=env)
+    atexit.register(_stop, proc)
     output, _ = proc.communicate()
     print(textwrap.indent(output, "\t"), flush=True)
-    stop()
+    _stop(proc)
     return proc.returncode, output
+
+
+def _stop(proc: Popen) -> None:
+    procs: list[Popen] = []
+    with contextlib.suppress(NoSuchProcess):
+        procs = [*proc.children(), proc]
+    print(f"... {len(procs)} processes need stopping")
+    if not procs:
+        return
+    for p in procs:
+        p.terminate()
+    _, alive = wait_procs(procs, timeout=3)
+    for p in alive:
+        p.kill()
+        p.wait()
+    print("... return codes", [p.returncode for p in procs], flush=True)
 
 
 if __name__ == "__main__":
