@@ -80,6 +80,9 @@ def _run(args, env=None) -> tuple[int, str]:
     proc = Popen(args, stdout=PIPE, stderr=STDOUT, encoding="utf-8", env=env)
     atexit.register(_stop, proc)
     output, _ = proc.communicate()
+    log_file = Path("gaphor-self-test.txt")
+    if args == ["gaphor", "self-test"] and log_file.is_file():
+        output += log_file.read_text(encoding="utf-8")
     print(textwrap.indent(output, "\t"), flush=True)
     _stop(proc)
     return proc.returncode, output
