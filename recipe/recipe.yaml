@@ -3,7 +3,7 @@ schema_version: 1
 
 context:
   name: gaphor
-  version: "3.3.2"
+  version: "3.4.0"
   python_min: "3.12"
   # segfaults if missing on e.g. a gtk3-based distro
   linux_extra: libgles
@@ -22,7 +22,7 @@ package:
 
 source:
   url: https://pypi.org/packages/source/g/gaphor/gaphor-${{ version }}.tar.gz
-  sha256: dc4cad4df94e861584923091e5eab45fc13e4c84d3bd0bd8606b0f2b3ba2bfba
+  sha256: 9f5630cbb47f8ee863f49c13912dffcf0bb04822114f81d433c1efd405f8be4c
 
 build:
   number: 0
