@@ -32,7 +32,10 @@ def test_version() -> None:
 
 def test_self_test() -> None:
     """Install schema and run the self-test CLI."""
-    schemas_dir = Path(sys.prefix) / "share" / "glib-2.0" / "schemas"
+    share = Path(sys.prefix) / "Library" / "share"
+    if not share.is_dir():
+        share = Path(sys.prefix) / "share"
+    schemas_dir = share / "glib-2.0" / "schemas"
     rc, _ = _run(["gaphor", "install-schemas", "--schemas-dir", str(schemas_dir)])
     assert rc == 0, "failed to install schemas"
     os.environ["GSETTINGS_SCHEMA_DIR"] = str(schemas_dir)
