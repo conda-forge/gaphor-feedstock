@@ -3,8 +3,8 @@ schema_version: 1
 
 context:
   name: gaphor
-  version: "3.3.2"
-  python_min: "3.12"
+  version: "3.4.0"
+  python_min: "3.13"
   # segfaults if missing on e.g. a gtk3-based distro
   linux_extra: libgles
   osx_extra: pyobjc-framework-cocoa >=9.0.1
@@ -14,7 +14,7 @@ context:
     ${{ linux_extra if noarch_platform == "linux" }}
     ${{ osx_extra if noarch_platform == "osx" }}
     ${{ win_extra if noarch_platform == "win" }}
-  python_check_max: "3.14"
+  python_check_max: "3.15"
 
 package:
   name: gaphor
@@ -22,7 +22,7 @@ package:
 
 source:
   url: https://pypi.org/packages/source/g/gaphor/gaphor-${{ version }}.tar.gz
-  sha256: dc4cad4df94e861584923091e5eab45fc13e4c84d3bd0bd8606b0f2b3ba2bfba
+  sha256: 9f5630cbb47f8ee863f49c13912dffcf0bb04822114f81d433c1efd405f8be4c
 
 build:
   number: 0
@@ -43,17 +43,16 @@ requirements:
     - ${{ noarch_extra | trim }}
     # from pyproject.toml
     - babel >=2.10.3
-    - better-exceptions >=0.3.3
     - defusedxml >=0.7.1
-    - dulwich >=0.25.0
+    - dulwich >=1.2.21
     - gaphas >=5.1
     - jedi >=0.18.1,<0.20.0
-    - pillow >=10.0.0
-    - pycairo >=1.22.0
+    - pillow >=13.0.0
+    - pycairo >=1.29.2
     - pydot >=1.4.2
-    - pygobject >=3.52
+    - pygobject >=3.58.1
     - python >=${{ python_min }}
-    - python-generic >=1.0.0
+    - python-generic >=1.1.8
     - tinycss2 >=1.0.2
     # not on PyPI
     - adwaita-icon-theme
@@ -78,8 +77,6 @@ tests:
         - python ${{ python_min }}.*
     script:
       env:
-        # for xvfb-run on linux
-        DISPLAY: ":1"
         # for anything on windows
         PYTHONIOENCODING: utf-8
       content:
