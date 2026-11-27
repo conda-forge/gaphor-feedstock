@@ -46,9 +46,10 @@ def test_self_test() -> None:
 
 
 def test_menu_launcher() -> None:
-    """Ship the menuinst launcher and platform icons."""
+    """Ship the menuinst launcher and platform icon."""
     menu = Path(sys.prefix) / "Menu"
-    for name in ("gaphor.json", "gaphor.png", "gaphor.icns", "gaphor.ico"):
+    icons = {"Linux": "gaphor.png", "Darwin": "gaphor.icns", "Windows": "gaphor.ico"}
+    for name in ("gaphor.json", icons[platform.system()]):
         assert (menu / name).is_file(), f"missing {name}"
     items = json.loads((menu / "gaphor.json").read_text(encoding="utf-8"))["menu_items"]
     assert isinstance(items, list), "menu_items is not a list"

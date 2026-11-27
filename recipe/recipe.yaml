@@ -31,19 +31,21 @@ build:
     # compile the translation catalogues before packaging them in the wheel
     - ${{ PYTHON }} -c "from scripts.build_babel import compile_mo_release; compile_mo_release()"
     - ${{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation --disable-pip-version-check
-    # install the menuinst launcher and icons
-    - if: unix
+    # install the menuinst launcher and icon
+    - if: linux
       then:
         - mkdir -p "$PREFIX/Menu"
         - cp "$RECIPE_DIR/menu/gaphor.json" "$PREFIX/Menu/gaphor.json"
         - cp "$SRC_DIR/data/logos/gaphor-256x256.png" "$PREFIX/Menu/gaphor.png"
+    - if: osx
+      then:
+        - mkdir -p "$PREFIX/Menu"
+        - cp "$RECIPE_DIR/menu/gaphor.json" "$PREFIX/Menu/gaphor.json"
         - cp "$SRC_DIR/_packaging/macos/gaphor.icns" "$PREFIX/Menu/gaphor.icns"
-        - cp "$SRC_DIR/_packaging/windows/gaphor.ico" "$PREFIX/Menu/gaphor.ico"
-      else:
+    - if: win
+      then:
         - if not exist "%PREFIX%\Menu" mkdir "%PREFIX%\Menu"
         - copy /Y "%RECIPE_DIR%\menu\gaphor.json" "%PREFIX%\Menu\gaphor.json"
-        - copy /Y "%SRC_DIR%\data\logos\gaphor-256x256.png" "%PREFIX%\Menu\gaphor.png"
-        - copy /Y "%SRC_DIR%\_packaging\macos\gaphor.icns" "%PREFIX%\Menu\gaphor.icns"
         - copy /Y "%SRC_DIR%\_packaging\windows\gaphor.ico" "%PREFIX%\Menu\gaphor.ico"
   python:
     entry_points:
